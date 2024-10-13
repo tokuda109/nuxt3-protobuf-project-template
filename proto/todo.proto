@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package api.todo.v1;
+
+import "google/api/annotations.proto";
+
+service ToDoApi {
+  rpc GetItem(GetItemRequest) returns (GetItemResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/todos/{id}"
+      body: "*"
+    };
+  }
+}
+
+message Item {
+  uint64 id = 1;
+  string title = 2;
+  bool is_complete = 3;
+}
+
+message GetItemRequest {
+  uint64 id = 1;
+}
+
+message GetItemResponse {
+  Item item = 1;
+}
