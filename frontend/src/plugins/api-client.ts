@@ -16,7 +16,10 @@ class ApiClient {
   }
 
   async request<Request, Response>(req: APIRequest<Request, Response>): Promise<Response> {
-    return this.client(req.path);
+    return this.client(req.path, {
+      method: req.method.toUpperCase(),
+      body: req.parameter || {},
+    });
   }
 }
 

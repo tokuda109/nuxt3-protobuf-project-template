@@ -2,9 +2,10 @@ import { defineNuxtConfig } from 'nuxt/config';
 
 export default defineNuxtConfig({
   srcDir: 'src',
+  // ssr: false,
   runtimeConfig: {
     public: {
-      baseUrl: 'http://localhost:3000',
+      baseUrl: 'http://localhost:4000',
     },
   },
   css: [

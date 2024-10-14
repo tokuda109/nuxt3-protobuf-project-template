@@ -1,52 +1,87 @@
 <script setup lang="ts">
+import type { Item } from '~/types/proto/todo_pb';
+
+const { items = [] } = defineProps<{ items: Item[] }>();
+
 const emits = defineEmits([
   'delete-todo',
   'edit-todo',
   'toggle-todo',
 ]);
 
-type Mode = 'view' | 'edit';
+const editingItem = ref<Item | null>(null);
+const editInput = ref<HTMLInputElement[] | null>(null);
 
-const mode = ref<Mode>('view');
-const editInput = ref<HTMLInputElement | null>(null);
+const editItem = computed({
+  get() {
+    return editingItem?.value?.title ?? '';
+  },
+  set(value: string) {
+    if (editingItem?.value) {
+      editingItem.value.title = value;
+    }
+  }
+});
 
-const startEdit = () => {
-  mode.value = 'edit';
+const startEdit = (item: Item, index: number) => {
+  editingItem.value = item;
   nextTick(() => {
-    editInput && editInput.value?.focus();
+    if (editInput.value && editInput.value[index]) {
+      editInput.value[index].focus();
+    }
   });
 };
 
-const finishEdit = () => {
-  mode.value = 'view';
+const onEnter = (item: Item) => {
+  editingItem.value = null;
 };
 
-const cancelEdit = () => {
-  mode.value = 'view';
+const onBlur = (item: Item) => {
+  if (editingItem?.value?.title === item.title) {
+    editingItem.value = null;
+    return;
+  }
+
+  editingItem.value = null;
+  emits('edit-todo', item);
 };
 
-const onRemoveButton = () => {
-  emits('delete-todo');
+const onCheckbox = (item: Item) => {
+  emits('toggle-todo', item);
+};
+
+const onRemoveButton = (item: Item) => {
+  emits('delete-todo', item);
 };
 </script>
 
 <template>
   <div class="TaskList">
     <ul class="TaskList__Items">
-      <li class="TaskList__Item" :class="{ '-editing': mode === 'edit' }">
+      <li
+        v-for="(item, index) in items"
+        :key="item.id"
+        class="TaskList__Item"
+        :class="{
+          '-editing': editingItem && editingItem.id === item.id,
+          '-completed': item.isComplete,
+        }"
+      >
         <div class="TaskList__View">
-          <input class="TaskList__Checkbox" type="checkbox" />
-          <span @dblclick="startEdit" class="TaskList__Label">test 1</span>
-          <button class="TaskList__RemoveButton" @click="onRemoveButton"></button>
+          <input class="TaskList__Checkbox" type="checkbox" @click="onCheckbox(item)" />
+          <span @dblclick="startEdit(item, index)" class="TaskList__Label">{{ item.title }}</span>
+          <button class="TaskList__RemoveButton" @click="onRemoveButton(item)"></button>
         </div>
-        <div class="TaskList__Edit" v-show="mode === 'edit'">
-          <input class="TaskList__Input" ref="editInput" type="text" @keyup.enter="finishEdit" @blur="cancelEdit" />
+        <div class="TaskList__Edit">
+          <input
+            class="TaskList__Input"
+            ref="editInput"
+            v-model="editItem"
+            type="text"
+            @keyup.enter="onEnter(item)"
+            @blur="onBlur(item)"
+          />
         </div>
-      </li>
-      <li class="TaskList__Item">
-        <input class="TaskList__Checkbox" type="checkbox" />
-        <span class="TaskList__Label">test 2</span>
-        <button class="TaskList__RemoveButton" @click="onRemoveButton"></button>
       </li>
     </ul>
   </div>
@@ -67,13 +102,23 @@ const onRemoveButton = () => {
   position: relative;
 }
 
+.TaskList__Item.-completed .TaskList__Label {
+  background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%22-10%20-18%20100%20135%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2250%22%20fill%3D%22none%22%20stroke%3D%22%2359A193%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20fill%3D%22%233EA390%22%20d%3D%22M72%2025L42%2071%2027%2056l-4%204%2020%2020%2034-52z%22%2F%3E%3C%2Fsvg%3E');
+  text-decoration: line-through;
+  color: #949494;
+}
+
 .TaskList__Item.-editing .TaskList__Edit {
   display: block;
   margin: 0 0 0 43px;
   width: calc(100% - 43px);
 }
 
-.TaskList__Item:hover > .TaskList__RemoveButton {
+.TaskList__Item.-editing .TaskList__Label {
+  background-image: none;
+}
+
+.TaskList__Item:hover .TaskList__RemoveButton {
   display: block;
 }
 
@@ -81,10 +126,19 @@ const onRemoveButton = () => {
   border-top: 1px solid #ededed;
 }
 
-.TaskList__View {}
+.TaskList__View {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
 .TaskList__Checkbox {
-  display: none;
+  position: absolute;
+  padding: 12px 16px;
+  background-color: transparent;
+  border: none;
+  appearance: none;
+  cursor: pointer;
 }
 
 .TaskList__Label {

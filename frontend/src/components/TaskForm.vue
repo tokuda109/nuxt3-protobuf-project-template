@@ -1,18 +1,38 @@
 <script setup lang="ts">
-const emits = defineEmits(['add-todo']);
+const { disableToggle } = defineProps<{
+  disableToggle: boolean;
+}>();
+
+const emits = defineEmits([
+  'toggle-all',
+  'add-todo',
+]);
+
+const inputText = ref<string>('');
+
+const onToggle = ({ target }: Event) => {
+  if (target instanceof HTMLInputElement) {
+    emits('toggle-all', target.checked);
+  }
+};
 
 const onEnter = (event: KeyboardEvent) => {
   event.preventDefault();
   const { target } = event;
   if (target instanceof HTMLInputElement) {
     emits('add-todo', target.value);
+    inputText.value = '';
   }
 };
 </script>
 
 <template>
   <form class="TaskForm" @submit.prevent>
+    <label v-if="!disableToggle" class="TaskForm__Toggle" htmlFor="toggle-all-items">
+      <input id="toggle-all-items" type="checkbox" @change="onToggle" />
+    </label>
     <input
+      v-model="inputText"
       class="TaskForm__Input"
       type="text"
       autofocus
@@ -25,6 +45,29 @@ const onEnter = (event: KeyboardEvent) => {
 
 <style scoped>
 .TaskForm {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.TaskForm__Toggle {
+  position: absolute;
+  padding: 10px 24px;
+}
+
+.TaskForm__Toggle::before {
+  display: inline-block;
+  background-color: transparent;
+  border: none;
+  font-size: 22px;
+  color: #949494;
+  appearance: none;
+  transform: rotate(90deg);
+  content: "❯";
+}
+
+.TaskForm__Toggle input {
+  display: none;
 }
 
 .TaskForm__Input {

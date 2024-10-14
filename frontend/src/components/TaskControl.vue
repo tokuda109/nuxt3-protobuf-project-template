@@ -1,18 +1,22 @@
 <script setup lang="ts">
-const props = defineProps<{
+const { filterType, taskAmount } = defineProps<{
+  filterType: FilterType;
   taskAmount: number;
 }>();
+
 const emits = defineEmits([
   'change-filter',
+  'clear-completed',
 ]);
 
 export type FilterType = 'all' | 'active' | 'completed';
 
-const filterType = ref<FilterType>('all');
-
 const onFilterButton = (type: FilterType) => {
-  filterType.value = type;
   emits('change-filter', type);
+};
+
+const onClearButton = () => {
+  emits('clear-completed');
 };
 </script>
 
@@ -30,13 +34,17 @@ const onFilterButton = (type: FilterType) => {
         <span class="TaskControl__Text">Completed</span>
       </button>
     </div>
+    <button class="TaskControl__Clear" @click="onClearButton">Clear Completed</button>
   </div>
 </template>
 
 <style scoped>
 .TaskControl {
   position: relative;
+  display: flex;
   padding: 10px 15px;
+  align-items: center;
+  justify-content: center;
   border-top: 1px solid #e6e6e6;
   font-size: 15px;
   font-weight: 300;
@@ -66,12 +74,21 @@ const onFilterButton = (type: FilterType) => {
   appearance: none;
 }
 
-.-active {
+.TaskControl__Button.-active {
   border-color: #ce4646;
 }
 
 .TaskControl__Text {
   display: block;
   padding: 3px 7px;
+}
+
+.TaskControl__Clear {
+  position: absolute;
+  right: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  appearance: none;
 }
 </style>

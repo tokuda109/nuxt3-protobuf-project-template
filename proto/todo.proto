@@ -5,9 +5,44 @@ package api.todo.v1;
 import "google/api/annotations.proto";
 
 service ToDoApi {
-  rpc GetItem(GetItemRequest) returns (GetItemResponse) {
+  rpc GetItems(GetItemsRequest) returns (GetItemsResponse) {
     option (google.api.http) = {
-      get: "/api/v1/todos/{id}"
+      post: "/api/v1/todos/get_items"
+      body: "*"
+    };
+  }
+
+  rpc ToggleItem(ToggleItemRequest) returns (ToggleItemResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/todos/toggle_item"
+      body: "*"
+    };
+  }
+
+  rpc ToggleAllItems(ToggleAllItemsRequest) returns (ToggleAllItemsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/todos/toggle_all_items"
+      body: "*"
+    };
+  }
+
+  rpc EditTitle(EditTitleRequest) returns (EditTitleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/todos/edit_title"
+      body: "*"
+    };
+  }
+
+  rpc AddItem(AddItemRequest) returns (AddItemResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/todos/add_item"
+      body: "*"
+    };
+  }
+
+  rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/todos/delete_item"
       body: "*"
     };
   }
@@ -19,10 +54,38 @@ message Item {
   bool is_complete = 3;
 }
 
-message GetItemRequest {
+message GetItemsRequest {
+}
+
+message GetItemsResponse {
+  repeated Item items = 1;
+}
+
+message ToggleItemRequest {
   uint64 id = 1;
 }
 
-message GetItemResponse {
-  Item item = 1;
+message ToggleItemResponse {}
+
+message ToggleAllItemsRequest {}
+
+message ToggleAllItemsResponse {}
+
+message EditTitleRequest {
+  uint64 id = 1;
+  string title = 2;
 }
+
+message EditTitleResponse {}
+
+message AddItemRequest {
+  string title = 1;
+}
+
+message AddItemResponse {}
+
+message DeleteItemRequest {
+  uint64 id = 1;
+}
+
+message DeleteItemResponse {}
