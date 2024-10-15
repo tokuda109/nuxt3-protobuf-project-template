@@ -73,6 +73,10 @@ service ToDoApi {
 +     };
 +   }
 }
+
++ message ClearCompletedItemsRequest {}
++ 
++ message ClearCompletedItemsResponse {}
 ```
 
 ### 2 Protoファイルから実装を生成
@@ -85,6 +89,17 @@ service ToDoApi {
 ```
 
 ### 3 生成された実装に追加の実装をする
+
+フロントエンドアプリケーションは、「」ボタンを押した時にイベントハンドラに処理がわたってくるところまで実装しているため、以下のようにコードを追加します。
+修正する箇所は、[`frontend/src/pages/index.vue` ファイルの73行目](https://github.com/tokuda109/nuxt3-protobuf-project-template/blob/main/frontend/src/pages/index.vue#L73)になります。
+
+```
+- const clearCompleted = () => {};
++ const clearCompleted = async () => {
++   await $apiClient.request(new ToDoApi.ClearCompletedItems({}));
++   fetchItems();
++ };
+```
 
 ## Protocol Buffersの定義追加
 
