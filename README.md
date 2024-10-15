@@ -1,6 +1,7 @@
 # nuxt3-protobuf-project-template
 
-このリポジトリは、[Vue Fes Japan 2024](https://vuefes.jp/2024)で発表した「」のデモプロジェクトです。  
+このリポジトリは、[Vue Fes Japan 2024](https://vuefes.jp/2024)で発表した「Protocol BuffersとNuxt3で開発生産性を上げるためのスキーマファースト開発の紹介」のLTのためのデモプロジェクトです。  
+プレゼンテーションで紹介したスキーマファースト開発の雰囲気を掴むことができるように作成しています。
 
 > [!NOTE]  
 > このプロジェクトは、基本的な機能は実装済みですが、1機能だけ未実装未で留めています。
@@ -55,6 +56,35 @@
 ```
 
 ## やってみよう
+
+このプロジェクトは、コンテンツ下部の「Clear Completed」ボタンが未実装になっています。
+このボタンを押下した時に、フロントエンドアプリケーションでイベントハンドリングして、バックエンドアプリケーションにAPIリクエストし、バックエンドアプリケーションから更新されたデータを取得する機能の開発を行います。
+
+### 1 Protoファイルに定義を追加
+
+フロントエンドアプリケーションとバックエンドアプリケーションでやりとりするデータを定義するために、[proto/todo.proto](https://github.com/tokuda109/nuxt3-protobuf-project-template/blob/main/proto/todo.proto)ファイルを以下のように修正して下さい。
+
+```diff
+service ToDoApi {
++   rpc ClearCompletedItems(ClearCompletedItemsRequest) returns (ClearCompletedItemsResponse) {
++     option (google.api.http) = {
++       post: "/api/v1/todos/clear_completed_items"
++       body: "*"
++     };
++   }
+}
+```
+
+### 2 Protoファイルから実装を生成
+
+ファイルを保存したら、プロジェクトのルートから以下のコマンドを実行して、修正したProto定義をフロントエンドアプリケーションとバックエンドアプリケーションに反映させます。
+
+```
+❯ protoc -I submodules/googleapis -I proto --plugin=backend/node_modules/.bin/protoc-gen-jsonpb-ts --jsonpb-ts_out=ignorePackage=true:backend/src/types/proto ./proto/*.proto
+❯ protoc -I submodules/googleapis -I proto --plugin=frontend/node_modules/.bin/protoc-gen-jsonpb-ts --jsonpb-ts_out=ignorePackage=true:frontend/src/types/proto ./proto/*.proto
+```
+
+### 3 生成された実装に追加の実装をする
 
 ## Protocol Buffersの定義追加
 
