@@ -4,7 +4,7 @@
 プレゼンテーションで紹介したスキーマファースト開発の雰囲気を掴むことができるように作成しています。
 
 > [!NOTE]  
-> このプロジェクトは、基本的な機能は実装済みですが、1機能だけ未実装未で留めています。
+> このプロジェクトは、基本的な機能は実装済みですが、1機能だけ未実装で留めています。
 > もし興味がある方は、続きの作業をやりきって、スキーマファースト開発の流れを実際に試してみて下さい。
 
 ## アプリケーションの概要
@@ -47,6 +47,18 @@
 
 ## 環境構築
 
+次のコマンドでソースコードをダウンロードします。
+
+```
+❯ git clone git@github.com:tokuda109/nuxt3-protobuf-project-template.git && cd nuxt3-protobuf-project-template
+```
+
+次のコマンドでGit Submoduleをダウンロードします。
+
+```
+❯ git submodule update --init --remote
+```
+
 [nodenv](https://github.com/nodenv/nodenv)を使っている方は以下のコマンドで推奨されるバージョンのNode.jsをインストールして下さい。
 
 ```
@@ -54,13 +66,20 @@
 ❯ corepack enable
 ```
 
-```
-❯ npm i -g pnpm
-```
+以下のコマンドでPNPMをインストールし、依存パッケージをインストールします。
 
 ```
+❯ npm i -g pnpm
 ❯ pnpm i --frozen-lockfile
 ```
+
+以下のコマンドを実行し、バックエンドアプリケーションとフロントエンドアプリケーションを起動します。
+
+```
+❯ turbo dev
+```
+
+http://localhost:3000 にアクセスするとデモアプリケーション(フロントエンドアプリケーション)を見ることができます。
 
 ## やってみよう
 
@@ -88,12 +107,15 @@ service ToDoApi {
 
 ### 2 Protoファイルから実装を生成
 
-ファイルを保存したら、プロジェクトのルートから以下のコマンドを実行して、修正したProto定義をフロントエンドアプリケーションとバックエンドアプリケーションに反映させます。
+ファイルを保存したら、プロジェクトのルートから以下のコマンドを実行して、修正したProto定義をフロントエンドアプリケーションに反映させます。
 
 ```
-❯ protoc -I submodules/googleapis -I proto --plugin=backend/node_modules/.bin/protoc-gen-jsonpb-ts --jsonpb-ts_out=ignorePackage=true:backend/src/types/proto ./proto/*.proto
 ❯ protoc -I submodules/googleapis -I proto --plugin=frontend/node_modules/.bin/protoc-gen-jsonpb-ts --jsonpb-ts_out=ignorePackage=true:frontend/src/types/proto ./proto/*.proto
 ```
+
+> [!NOTE]  
+> 本当はこのタイミングでバックエンドアプリケーションにもProto定義を反映させますが、今回はフロントエンドエンジニア側の視点から開発を体験してもらいたいので、バックエンドへの反映は省略します。
+> バックエンドへの反映は既に行っているため、フロントエンド側のみ反映してください。
 
 ### 3 生成された実装に追加の実装をする
 
@@ -118,11 +140,48 @@ service ToDoApi {
 ❯ pnpm --filter=frontend dev
 ```
 
-## Protocol Buffersの定義追加
+「Clear Completed」ボタンを押下すると、Chrome DevTools で `/api/v1/todos/clear_completed_items` に対するリクエストが発生することが確認できると思います。
 
-Protocol Buffersに定義を
+### 4 モックサーバーのデータを用意する
+
+モックサーバーのデータ準備がまだできていないので、`/api/v1/todos/clear_completed_items` へのリクエストは失敗していると思います。
+
+`frontend/src/server/api/v1/todos/clear_completed_items.ts` ファイルを作成し、次のコードをコピペして下さい。
+
+```diff
++ import type { ClearCompletedItemsResponse } from '~/types/proto/todo_pb';
++ 
++ export default defineEventHandler<ClearCompletedItemsResponse>(() => {
++   return {};
++ });
+```
+
+モックサーバーがリクエストを受け付けるようになったので、今度はリクエストが成功すると思います。
+
+### 5 バックエンドアプリケーションと結合する
+
+最後にバックエンドアプリケーションと結合した状態でフロントエンドアプリケーションを起動してみましょう。
+
+`pnpm --filter=frontend dev` を実行して開発用サーバーを起動した場合、モックサーバー(`/frontend/src/server/api` ディレクトリ配下のファイルが使われる)がダミーデータを返しますが、バックエンドとフロントエンドの両方の開発が終わるとTEST環境で結合して動かします。  
+バックエンドアプリケーションにリクエストするためには、次のコマンドを実行してフロントエンドアプリケーションを起動します。
+
+```
+❯ pnpm --filter=frontend build
+❯ pnpm --filter=frontend start
+```
+
+別のターミナルから、次のコマンドでバックエンドアプリケーションも起動します。
+
+```
+❯ pnpm --filter=backend start
+```
+
+今度はフロントエンドアプリケーションからのリクエストは、バックエンドアプリケーションに対して送られるため、ToDoアイテムが動的に増減すると思います。
+
+### おまけ
+
+バックエンドアプリケーションにもProto定義を反映させるコマンドを紹介します。
 
 ```
 ❯ protoc -I submodules/googleapis -I proto --plugin=backend/node_modules/.bin/protoc-gen-jsonpb-ts --jsonpb-ts_out=ignorePackage=true:backend/src/types/proto ./proto/*.proto
-❯ protoc -I submodules/googleapis -I proto --plugin=frontend/node_modules/.bin/protoc-gen-jsonpb-ts --jsonpb-ts_out=ignorePackage=true:frontend/src/types/proto ./proto/*.proto
 ```

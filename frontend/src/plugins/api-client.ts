@@ -25,7 +25,7 @@ class ApiClient {
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
-  const apiClient = new ApiClient(config.public.baseUrl);
+  const apiClient = new ApiClient(config.public.apiBase);
 
   return {
     provide: {

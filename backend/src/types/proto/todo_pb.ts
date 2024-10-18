@@ -46,6 +46,14 @@ export namespace ToDoApi {
     method: HTTPMethod = "post";
     constructor(public parameter: DeleteItemRequest) {}
   }
+  export class ClearCompletedItems
+    implements
+      APIRequest<ClearCompletedItemsRequest, ClearCompletedItemsResponse> {
+    _response?: ClearCompletedItemsResponse;
+    path = "/api/v1/todos/clear_completed_items";
+    method: HTTPMethod = "post";
+    constructor(public parameter: ClearCompletedItemsRequest) {}
+  }
 }
 
 export interface Item {
@@ -88,3 +96,7 @@ export interface DeleteItemRequest {
 }
 
 export interface DeleteItemResponse {}
+
+export interface ClearCompletedItemsRequest {}
+
+export interface ClearCompletedItemsResponse {}

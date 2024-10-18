@@ -10,9 +10,9 @@
   },
   "scripts": {
     "prepare": "nuxi prepare",
-    "dev": "nuxi dev",
+    "dev": "nuxi dev --dotenv=.env.local",
     "build": "nuxi build",
-    "start": "nuxi preview"
+    "start": "nuxi start --dotenv=.env.production"
   },
   "dependencies": {
     "nuxt": "3.13.2",

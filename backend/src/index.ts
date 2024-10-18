@@ -12,6 +12,8 @@ import type {
   AddItemResponse,
   DeleteItemRequest,
   DeleteItemResponse,
+  ClearCompletedItemsRequest,
+  ClearCompletedItemsResponse,
 } from './types/proto/todo_pb';
 
 const app = createApp();
@@ -46,6 +48,8 @@ router.use('**', eventHandler(async (event) => {
       return AddItem(event);
     case '/api/v1/todos/delete_item':
       return DeleteItem(event);
+    case '/api/v1/todos/clear_completed_items':
+      return ClearCompletedItems(event);
     default:
       setResponseStatus(event, 404);
       return "Not found";
@@ -96,6 +100,13 @@ const AddItem = async (event): Promise<AddItemResponse> => {
 const DeleteItem = async (event): Promise<DeleteItemResponse> => {
   const body = await readBody(event) as DeleteItemRequest;
   todos = todos.filter((todo) => todo.id !== body.id);
+  setResponseStatus(event, 204);
+  return {};
+};
+
+const ClearCompletedItems = async (event): Promise<ClearCompletedItemsResponse> => {
+  const body = await readBody(event) as ClearCompletedItemsRequest;
+  todos = todos.filter((todo) => todo.isComplete === false);
   setResponseStatus(event, 204);
   return {};
 };
